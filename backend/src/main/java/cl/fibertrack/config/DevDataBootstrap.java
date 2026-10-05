@@ -1,0 +1,8 @@
+package cl.fibertrack.config;
+import cl.fibertrack.domain.InfrastructureService; import cl.fibertrack.user.UserRepository; import org.springframework.boot.*; import org.springframework.context.annotation.Profile; import org.springframework.core.annotation.Order; import org.springframework.jdbc.core.simple.JdbcClient; import org.springframework.stereotype.Component;
+import java.util.*;
+@Component @Profile("dev") @Order(2) public class DevDataBootstrap implements ApplicationRunner {
+ private final JdbcClient db;private final UserRepository users;private final FiberTrackProperties props;private final InfrastructureService infrastructure;
+ public DevDataBootstrap(JdbcClient db,UserRepository users,FiberTrackProperties props,InfrastructureService infrastructure){this.db=db;this.users=users;this.props=props;this.infrastructure=infrastructure;}
+ public void run(ApplicationArguments args){if(db.sql("SELECT count(*) FROM proyectos").query(Integer.class).single()>0)return;var owner=users.findByEmailIgnoreCaseAndDeletedAtIsNull(props.owner().email()).orElseThrow();var project=(UUID)infrastructure.createProject(owner.getId(),"Edificio Demo","Av. Ejemplo 1234","Santiago","Datos de desarrollo").get("id");var header=(UUID)infrastructure.createHeader(owner.getId(),project,"Cabecera 01",144).get("id");infrastructure.createSector(owner.getId(),header,"20","A",List.of("201","202","203","204","205","206"));infrastructure.createSector(owner.getId(),header,"19","B",List.of("1901","1902","1905","1906"));infrastructure.createCable(owner.getId(),project,"Cable Demo 48F","DEMO-48");db.sql("INSERT INTO operadores(nombre,codigo) VALUES ('Operador Demo 1','OP-DEMO-1'),('Operador Demo 2','OP-DEMO-2')").update();}
+}

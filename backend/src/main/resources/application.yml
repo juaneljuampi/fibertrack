@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: fibertrack
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/fibertrack}
+    username: ${POSTGRES_USER:fibertrack}
+    password: ${POSTGRES_PASSWORD:fibertrack}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties.mail.smtp.auth: ${MAIL_AUTH:false}
+    properties.mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  error:
+    include-stacktrace: never
+management:
+  endpoints.web.exposure.include: health,info
+  endpoint.health.probes.enabled: true
+springdoc:
+  swagger-ui.path: /swagger-ui.html
+fibertrack:
+  jwt:
+    secret: ${JWT_SECRET:development-only-secret-key-change-me-now}
+    access-seconds: ${JWT_ACCESS_EXPIRATION:900}
+    refresh-seconds: ${REFRESH_TOKEN_EXPIRATION:2592000}
+  owner:
+    email: ${INITIAL_OWNER_EMAIL:juaneljuampi@gmail.com}
+    password: ${INITIAL_OWNER_PASSWORD:}
+  mail-from: ${MAIL_FROM:no-reply@fibertrack.local}
+  public-url: ${PUBLIC_URL:http://localhost:8080}
+

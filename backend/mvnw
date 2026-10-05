@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+if command -v mvn >/dev/null 2>&1; then exec mvn "$@"; fi
+echo "Maven 3.9+ no está instalado. Use: docker build ." >&2
+exit 127
+

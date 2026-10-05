@@ -1,0 +1,6 @@
+package cl.fibertrack.config;
+import cl.fibertrack.user.*; import lombok.RequiredArgsConstructor; import org.springframework.boot.ApplicationArguments; import org.springframework.boot.ApplicationRunner; import org.springframework.security.crypto.password.PasswordEncoder; import org.springframework.stereotype.Component; import org.springframework.transaction.annotation.Transactional;
+@Component @org.springframework.core.annotation.Order(1) @RequiredArgsConstructor public class OwnerBootstrap implements ApplicationRunner {
+ private final FiberTrackProperties props; private final UserRepository users; private final RoleRepository roles; private final PasswordEncoder encoder;
+ @Transactional public void run(ApplicationArguments args){var email=props.owner().email().strip().toLowerCase(); var found=users.findByEmailIgnoreCaseAndDeletedAtIsNull(email); if(found.isPresent()) return; var u=new User(); u.setNombre("Juan");u.setApellido("");u.setEmail(email);u.setOwner(true);u.setProtectedAccount(true);u.setActivo(true);roles.findByCodigo("ADMIN").ifPresent(r->u.getRoles().add(r)); if(props.owner().password()!=null&&!props.owner().password().isBlank()){u.setPasswordHash(encoder.encode(props.owner().password()));u.setCredentialStatus("ACTIVA");} users.save(u);}
+}

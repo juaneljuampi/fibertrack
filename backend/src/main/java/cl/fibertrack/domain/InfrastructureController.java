@@ -1,0 +1,17 @@
+package cl.fibertrack.domain;
+import cl.fibertrack.security.PrincipalUser; import jakarta.validation.constraints.*; import lombok.RequiredArgsConstructor; import org.springframework.http.HttpStatus; import org.springframework.security.access.prepost.PreAuthorize; import org.springframework.security.core.annotation.AuthenticationPrincipal; import org.springframework.web.bind.annotation.*; import java.util.*;
+@RestController @RequestMapping("/api/v1") @RequiredArgsConstructor public class InfrastructureController {
+ private final InfrastructureService service;
+ public record Project(@NotBlank String nombre,@NotBlank String direccion,String comuna,String descripcion){} public record Header(@NotBlank String nombre,int capacidad){} public record Sector(@NotBlank String piso,@NotBlank String lado,@NotEmpty List<@NotBlank String> departamentos){} public record Cable(@NotBlank String nombre,@NotBlank String codigo){} public record Assignment(@NotNull UUID fibraId,@NotNull UUID operadorId){}
+ @GetMapping("/proyectos") @PreAuthorize("hasAuthority('PROYECTO_VER') or hasAuthority('OWNER')") Object projects(){return service.projects();}
+ @PostMapping("/proyectos") @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("hasAuthority('PROYECTO_CREAR') or hasAuthority('OWNER')") Object project(@RequestBody Project r,@AuthenticationPrincipal PrincipalUser p){return service.createProject(p.id(),r.nombre,r.direccion,r.comuna,r.descripcion);}
+ @GetMapping("/proyectos/{id}/cabeceras") @PreAuthorize("hasAuthority('CABECERA_VER') or hasAuthority('OWNER')") Object headers(@PathVariable UUID id){return service.headers(id);}
+ @PostMapping("/proyectos/{id}/cabeceras") @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("hasAuthority('CABECERA_CREAR') or hasAuthority('OWNER')") Object header(@PathVariable UUID id,@RequestBody Header r,@AuthenticationPrincipal PrincipalUser p){return service.createHeader(p.id(),id,r.nombre,r.capacidad);}
+ @GetMapping("/cabeceras/{id}") @PreAuthorize("hasAuthority('CABECERA_VER') or hasAuthority('OWNER')") Object header(@PathVariable UUID id){return service.header(id);}
+ @GetMapping("/cabeceras/{id}/sectores") @PreAuthorize("hasAuthority('SECTOR_VER') or hasAuthority('OWNER')") Object sectors(@PathVariable UUID id){return service.sectors(id);}
+ @PostMapping("/cabeceras/{id}/sectores") @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("hasAuthority('SECTOR_CREAR') or hasAuthority('OWNER')") Object sector(@PathVariable UUID id,@RequestBody Sector r,@AuthenticationPrincipal PrincipalUser p){return service.createSector(p.id(),id,r.piso,r.lado,r.departamentos);}
+ @GetMapping("/sectores/{id}") @PreAuthorize("hasAuthority('SECTOR_VER') or hasAuthority('OWNER')") Object sector(@PathVariable UUID id){return service.sector(id);}
+ @PostMapping("/proyectos/{id}/cables/48") @PreAuthorize("hasAuthority('CABLE_CREAR') or hasAuthority('OWNER')") Object cable(@PathVariable UUID id,@RequestBody Cable r,@AuthenticationPrincipal PrincipalUser p){return service.createCable(p.id(),id,r.nombre,r.codigo);}
+ @PostMapping("/posiciones/{id}/asignacion") @PreAuthorize("hasAuthority('FIBRA_ASIGNAR') or hasAuthority('OWNER')") void assign(@PathVariable UUID id,@RequestBody Assignment r,@AuthenticationPrincipal PrincipalUser p){service.assignFiber(p.id(),id,r.fibraId,r.operadorId);}
+ @GetMapping("/posiciones/{id}/trazabilidad") @PreAuthorize("hasAuthority('FIBRA_VER') or hasAuthority('OWNER')") Object trace(@PathVariable UUID id){return service.trace(id);}
+}
